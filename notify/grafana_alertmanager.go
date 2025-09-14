@@ -617,3 +617,21 @@ func (am *GrafanaAlertmanager) tenantString() string {
 func (am *GrafanaAlertmanager) buildReceiverIntegration(next *GrafanaReceiver, tmpl *templates.Template) (Notifier, error) {
 	return am.buildReceiverIntegrationFunc(next, tmpl)
 }
+
+// Mutes returns the IDs of silences that match the given label set and are currently active.
+func (am *GrafanaAlertmanager) Mutes(labelSet model.LabelSet) ([]string, error) {
+	// Query silences that match the given label set
+	// QMatches uses the same matching logic as the silencer
+	psils, _, err := am.silences.Query(silence.QMatches(labelSet), silence.QState(types.SilenceStateActive))
+	if err != nil {
+		return nil, fmt.Errorf("failed to query silences: %w", err)
+	}
+
+	// Extract the IDs of matching silences
+	var silenceIDs []string
+	for _, ps := range psils {
+		silenceIDs = append(silenceIDs, ps.Id)
+	}
+
+	return silenceIDs, nil
+}
