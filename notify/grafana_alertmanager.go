@@ -917,3 +917,7 @@ func (am *GrafanaAlertmanager) Mutes(labelSet model.LabelSet) ([]string, error) 
 
 	return silenceIDs, nil
 }
+
+func (am *GrafanaAlertmanager) GetSilencesService() *silence.Silences {
+	return am.silences
+}
