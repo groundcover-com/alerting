@@ -922,3 +922,24 @@ func (am *GrafanaAlertmanager) timeoutFunc(d time.Duration) time.Duration {
 func (am *GrafanaAlertmanager) tenantString() string {
 	return fmt.Sprintf("%d", am.tenantID)
 }
+
+func (am *GrafanaAlertmanager) Mutes(labelSet model.LabelSet) ([]string, error) {
+	// Query silences that match the given label set
+	// QMatches uses the same matching logic as the silencer
+	psils, _, err := am.silences.Query(silence.QMatches(labelSet), silence.QState(types.SilenceStateActive))
+	if err != nil {
+		return nil, fmt.Errorf("failed to query silences: %w", err)
+	}
+
+	// Extract the IDs of matching silences
+	var silenceIDs []string
+	for _, ps := range psils {
+		silenceIDs = append(silenceIDs, ps.Id)
+	}
+
+	return silenceIDs, nil
+}
+
+func (am *GrafanaAlertmanager) GetSilencesService() *silence.Silences {
+	return am.silences
+}
