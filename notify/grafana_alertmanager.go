@@ -1033,7 +1033,7 @@ func (am *GrafanaAlertmanager) Mutes(labelSet model.LabelSet) ([]string, error) 
 	}
 
 	// Extract the IDs of matching silences
-	var silenceIDs []string
+	var silenceIDs []string //nolint:prealloc // keep nil for no matches; serialized as "silenceIds": null downstream
 	for _, ps := range psils {
 		silenceIDs = append(silenceIDs, ps.Id)
 	}
