@@ -1023,3 +1023,20 @@ func (am *GrafanaAlertmanager) buildReceiverIntegrations(receiver *APIReceiver, 
 		am.opts.NotificationHistorian,
 	)
 }
+
+func (am *GrafanaAlertmanager) Mutes(labelSet model.LabelSet) ([]string, error) {
+	// Query silences that match the given label set
+	// QMatches uses the same matching logic as the silencer
+	psils, _, err := am.silences.Query(silence.QMatches(labelSet), silence.QState(types.SilenceStateActive))
+	if err != nil {
+		return nil, fmt.Errorf("failed to query silences: %w", err)
+	}
+
+	// Extract the IDs of matching silences
+	var silenceIDs []string //nolint:prealloc // keep nil for no matches; serialized as "silenceIds": null downstream
+	for _, ps := range psils {
+		silenceIDs = append(silenceIDs, ps.Id)
+	}
+
+	return silenceIDs, nil
+}
